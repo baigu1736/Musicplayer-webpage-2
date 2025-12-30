@@ -5145,21 +5145,14 @@
                 // 全部歌曲：显示所有歌曲
                 trackIndices = tracks.map((_, index) => index);
             } else {
-                // 歌单模式：只显示歌单中的歌曲
+                // 歌单模式：根据歌单记录显示歌曲
                 const playlist = playlists.find(p => p.id === currentPlaylistId);
                 if (playlist) {
-                    // 根据文件名查找对应的歌曲索引
+                    // 根据歌单中的文件名记录查找对应的歌曲
+                    // 这确保了即使歌曲曾被删除后又重新添加，只要文件名匹配就会显示
                     trackIndices = playlist.trackFilenames
                         .map(filename => tracks.findIndex(track => track.file.name === filename))
-                        .filter(index => index !== -1); // 过滤掉找不到的歌曲
-                    
-                    // 如果有无效文件名，更新歌单
-                    if (playlist.trackFilenames.length !== trackIndices.length) {
-                        playlist.trackFilenames = trackIndices
-                            .map(index => tracks[index]?.file?.name)
-                            .filter(name => name);
-                        savePlaylists();
-                    }
+                        .filter(index => index !== -1);
                 } else {
                     // 如果歌单不存在，显示全部歌曲
                     trackIndices = tracks.map((_, index) => index);
@@ -5270,6 +5263,7 @@
             const deletedTrack = tracks[index];
             const deletedFilename = deletedTrack?.file?.name;
 
+            /*
             // 更新所有歌单中的文件名
             playlists.forEach(playlist => {
                 // 删除被删除歌曲在歌单中的引用
@@ -5280,6 +5274,7 @@
             });
 
             savePlaylists();
+            */
 
             // 处理当前播放歌曲被删除的情况
             if (index === currentTrackIndex) {
@@ -5585,6 +5580,7 @@
             // 重新渲染播放列表（只显示当前歌单的歌曲）
             renderPlaylist();
             
+            /*
             // 如果当前播放的歌曲不在当前歌单中，切换到歌单中的第一首（如果存在）
             if (currentPlaylistId) {
                 const playlist = playlists.find(p => p.id === currentPlaylistId);
@@ -5607,6 +5603,7 @@
                     }
                 }
             }
+            */
         }
 
         // 新建歌单
@@ -5931,6 +5928,8 @@
                     loadTrack(currentTrackIndex);
                 }
             }
+            // !!! 新增：自动关闭歌单管理面板 !!!
+            closePlaylistManager();
         }
         
         /* ============================================
